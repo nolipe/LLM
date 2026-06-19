@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gerador de Questoes de Revisao</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f7fb;
+      color: #172033;
+    }
+
+    main {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 32px 20px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 32px;
+    }
+
+    p {
+      color: #4c5b70;
+      line-height: 1.5;
+    }
+
+    section {
+      background: #ffffff;
+      border: 1px solid #dce3ee;
+      border-radius: 8px;
+      padding: 20px;
+      margin-top: 20px;
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+      margin: 14px 0 6px;
+    }
+
+    textarea,
+    select,
+    input {
+      width: 100%;
+      border: 1px solid #b8c4d6;
+      border-radius: 6px;
+      padding: 10px;
+      font-size: 16px;
+      font-family: inherit;
+    }
+
+    textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    .linha {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    button {
+      margin-top: 18px;
+      border: 0;
+      border-radius: 6px;
+      padding: 12px 18px;
+      background: #1f6feb;
+      color: #ffffff;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      background: #8caee8;
+      cursor: wait;
+    }
+
+    pre {
+      min-height: 220px;
+      white-space: pre-wrap;
+      background: #eef3f8;
+      border: 1px solid #d6dfeb;
+      border-radius: 8px;
+      padding: 16px;
+      line-height: 1.5;
+      overflow-x: auto;
+    }
+
+    @media (max-width: 650px) {
+      .linha {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Gerador de Questoes de Revisao</h1>
+    <p>Informe um tema de estudo, responda as questoes e confira o gabarito comentado no final.</p>
+
+    <section>
+      <label for="tema">Tema da revisao</label>
+      <textarea id="tema" placeholder="Ex.: APIs REST, banco de dados relacional, estruturas condicionais em JavaScript"></textarea>
+
+      <div class="linha">
+        <div>
+          <label for="quantidade">Quantidade</label>
+          <input id="quantidade" type="number" min="3" max="10" value="5" />
+        </div>
+
+        <div>
+          <label for="nivel">Nivel</label>
+          <select id="nivel">
+            <option value="iniciante">Iniciante</option>
+            <option value="intermediario">Intermediario</option>
+            <option value="avancado">Avancado</option>
+          </select>
+        </div>
+      </div>
+
+      <button id="botao" onclick="gerarQuestoes()">Gerar questoes</button>
+    </section>
+
+    <section>
+      <h2>Questoes geradas</h2>
+      <div id="questoes">As questoes aparecerao aqui.</div>
+      <button id="corrigir" onclick="corrigirRespostas()" style="display: none;">Corrigir respostas</button>
+    </section>
+
+    <section>
+      <h2>Resultado</h2>
+      <pre id="resultado">O gabarito comentado aparecera depois que voce responder.</pre>
+    </section>
+  </main>
+
+  <script>
+    let questoesAtuais = [];
+
+    function mostrarQuestoes(questoes) {
+      const container = document.getElementById("questoes");
+      const corrigir = document.getElementById("corrigir");
+      const resultado = document.getElementById("resultado");
+
+      questoesAtuais = questoes;
+      resultado.textContent = "O gabarito comentado aparecera depois que voce responder.";
+
+      container.innerHTML = questoes.map((questao, indice) => {
+        const numero = indice + 1;
+        const alternativas = ["A", "B", "C", "D"].map((letra) => {
+          const texto = questao.alternativas?.[letra] || "";
+          return `
+            <label>
+              <input type="radio" name="questao-${indice}" value="${letra}" />
+              ${letra}) ${texto}
+            </label>
+          `;
+        }).join("");
+
+        return `
+          <article>
+            <h3>Questao ${numero}</h3>
+            <p>${questao.enunciado}</p>
+            ${alternativas}
+          </article>
+        `;
+      }).join("");
+
+      corrigir.style.display = "inline-block";
+    }
+
+    async function gerarQuestoes() {
+      const tema = document.getElementById("tema").value;
+      const quantidade = document.getElementById("quantidade").value;
+      const nivel = document.getElementById("nivel").value;
+      const output = document.getElementById("questoes");
+      const botao = document.getElementById("botao");
+      const corrigir = document.getElementById("corrigir");
+
+      output.textContent = "Gerando questoes...";
+      document.getElementById("resultado").textContent = "O gabarito comentado aparecera depois que voce responder.";
+      corrigir.style.display = "none";
+      botao.disabled = true;
+
+      try {
+        const response = await fetch("/api/questoes", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ tema, quantidade, nivel })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          output.textContent = data.erro || "Erro ao gerar questoes.";
+          return;
+        }
+
+        mostrarQuestoes(data.questoes);
+      } catch (error) {
+        output.textContent = "Erro ao conectar com a API local.";
+      } finally {
+        botao.disabled = false;
+      }
+    }
+
+    function corrigirRespostas() {
+      const resultado = document.getElementById("resultado");
+      let acertos = 0;
+
+      const linhas = questoesAtuais.map((questao, indice) => {
+        const selecionada = document.querySelector(`input[name="questao-${indice}"]:checked`);
+        const respostaUsuario = selecionada ? selecionada.value : "nao respondida";
+        const correta = questao.correta;
+        const acertou = respostaUsuario === correta;
+
+        if (acertou) {
+          acertos += 1;
+        }
+
+        const textoResposta = questao.alternativas?.[respostaUsuario] || "nenhuma alternativa marcada";
+        const textoCorreta = questao.alternativas?.[correta] || "";
+        const explicacaoUsuario = questao.explicacoes?.[respostaUsuario];
+        const explicacaoCorreta = questao.explicacoes?.[correta] || "A alternativa indicada corresponde ao conceito cobrado na questao.";
+
+        if (acertou) {
+          return `Questao ${indice + 1}
+Sua resposta: ${respostaUsuario}
+Resultado: correta
+
+Por que esta correta:
+${explicacaoCorreta}`;
+        }
+
+        return `Questao ${indice + 1}
+Sua resposta: ${respostaUsuario} - ${textoResposta}
+Gabarito: ${correta} - ${textoCorreta}
+Resultado: incorreta
+
+Por que sua resposta nao era a melhor:
+${explicacaoUsuario || "Voce nao marcou uma alternativa para esta questao."}
+
+Por que o gabarito esta correto:
+${explicacaoCorreta}`;
+      });
+
+      resultado.textContent = `Voce acertou ${acertos} de ${questoesAtuais.length} questoes.\n\n${linhas.join("\n\n")}`;
+    }
+  </script>
+</body>
+</html>
