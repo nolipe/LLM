@@ -162,7 +162,7 @@ Regras:
             content: prompt
           }
         ],
-        temperature: 0.2,
+        temperature: 0.3,
         max_completion_tokens: 1600
       })
     });

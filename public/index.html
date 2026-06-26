@@ -5,146 +5,466 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Gerador de Questoes de Revisao</title>
   <style>
+    :root {
+      --bg: #f6f7f4;
+      --panel: #ffffff;
+      --panel-soft: #f1f5f2;
+      --text: #18211b;
+      --muted: #5e6b62;
+      --line: #d8e0da;
+      --accent: #146c5c;
+      --accent-dark: #0f5146;
+      --accent-soft: #dff1ed;
+      --warning: #b45309;
+      --shadow: 0 18px 45px rgba(24, 33, 27, 0.1);
+    }
+
     * {
       box-sizing: border-box;
     }
 
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f4f7fb;
-      color: #172033;
+      min-height: 100vh;
+      font-family: Inter, "Segoe UI", Arial, sans-serif;
+      background:
+        linear-gradient(135deg, rgba(20, 108, 92, 0.13), transparent 34%),
+        linear-gradient(315deg, rgba(177, 91, 50, 0.1), transparent 32%),
+        var(--bg);
+      color: var(--text);
     }
 
     main {
-      max-width: 900px;
+      width: min(1120px, calc(100% - 32px));
       margin: 0 auto;
-      padding: 32px 20px;
+      padding: 36px 0 48px;
+    }
+
+    .topo {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(280px, 0.9fr);
+      gap: 28px;
+      align-items: end;
+      margin-bottom: 24px;
+    }
+
+    .marca {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      width: fit-content;
+      margin-bottom: 18px;
+      color: var(--accent-dark);
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
+
+    .marca::before {
+      content: "";
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 18px 0 0 #d17a4f;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin-top: 0;
     }
 
     h1 {
-      margin: 0 0 8px;
-      font-size: 32px;
+      max-width: 720px;
+      margin-bottom: 12px;
+      font-size: clamp(34px, 6vw, 68px);
+      line-height: 0.97;
+      letter-spacing: 0;
     }
 
-    p {
-      color: #4c5b70;
-      line-height: 1.5;
+    .subtitulo {
+      max-width: 650px;
+      margin-bottom: 0;
+      color: var(--muted);
+      font-size: 18px;
+      line-height: 1.65;
+    }
+
+    .resumo {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      padding: 14px;
+      border: 1px solid rgba(20, 108, 92, 0.16);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.7);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+    }
+
+    .resumo span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .resumo strong {
+      display: block;
+      margin-top: 5px;
+      font-size: 24px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(300px, 380px) minmax(0, 1fr);
+      gap: 22px;
+      align-items: start;
     }
 
     section {
-      background: #ffffff;
-      border: 1px solid #dce3ee;
+      border: 1px solid var(--line);
       border-radius: 8px;
-      padding: 20px;
-      margin-top: 20px;
+      background: rgba(255, 255, 255, 0.88);
+      box-shadow: var(--shadow);
+    }
+
+    .painel {
+      position: sticky;
+      top: 18px;
+      padding: 22px;
+    }
+
+    .conteudo {
+      display: grid;
+      gap: 18px;
+    }
+
+    .bloco {
+      padding: 22px;
+    }
+
+    h2 {
+      margin-bottom: 14px;
+      font-size: 22px;
+      letter-spacing: 0;
     }
 
     label {
       display: block;
-      font-weight: bold;
-      margin: 14px 0 6px;
+      margin: 16px 0 7px;
+      color: #26352b;
+      font-size: 14px;
+      font-weight: 800;
     }
 
     textarea,
     select,
-    input {
+    input[type="number"] {
       width: 100%;
-      border: 1px solid #b8c4d6;
-      border-radius: 6px;
-      padding: 10px;
-      font-size: 16px;
-      font-family: inherit;
+      border: 1px solid #bdc9c0;
+      border-radius: 8px;
+      padding: 12px 13px;
+      background: #fbfcfb;
+      color: var(--text);
+      font: inherit;
+      font-size: 15px;
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
     }
 
     textarea {
-      min-height: 100px;
+      min-height: 142px;
       resize: vertical;
+    }
+
+    textarea:focus,
+    select:focus,
+    input[type="number"]:focus {
+      border-color: var(--accent);
+      background: #ffffff;
+      box-shadow: 0 0 0 4px rgba(20, 108, 92, 0.13);
     }
 
     .linha {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 16px;
+      gap: 14px;
     }
 
     button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      min-height: 48px;
       margin-top: 18px;
       border: 0;
-      border-radius: 6px;
+      border-radius: 8px;
       padding: 12px 18px;
-      background: #1f6feb;
+      background: var(--accent);
       color: #ffffff;
-      font-size: 16px;
-      font-weight: bold;
+      font: inherit;
+      font-size: 15px;
+      font-weight: 800;
       cursor: pointer;
+      transition: transform 0.16s ease, background 0.16s ease, box-shadow 0.16s ease;
+      box-shadow: 0 12px 22px rgba(20, 108, 92, 0.23);
+    }
+
+    button:hover:not(:disabled) {
+      background: var(--accent-dark);
+      transform: translateY(-1px);
     }
 
     button:disabled {
-      background: #8caee8;
+      background: #8aa59d;
       cursor: wait;
+      box-shadow: none;
+    }
+
+    #corrigir {
+      width: auto;
+      min-width: 190px;
+      margin-top: 8px;
+    }
+
+    #questoes {
+      display: grid;
+      gap: 14px;
+      color: var(--muted);
+    }
+
+    .estado-vazio {
+      display: grid;
+      place-items: center;
+      min-height: 170px;
+      border: 1px dashed #b9c8bd;
+      border-radius: 8px;
+      background: var(--panel-soft);
+      color: var(--muted);
+      text-align: center;
+      padding: 18px;
+    }
+
+    article {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      overflow: hidden;
+    }
+
+    .questao-topo {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 16px 18px 0;
+    }
+
+    .numero {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 86px;
+      height: 32px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent-dark);
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    article p {
+      margin: 12px 18px 16px;
+      color: #26352b;
+      font-size: 17px;
+      line-height: 1.55;
+    }
+
+    .alternativas {
+      display: grid;
+      gap: 10px;
+      padding: 0 18px 18px;
+    }
+
+    .alternativa {
+      display: grid;
+      grid-template-columns: 22px 1fr;
+      gap: 10px;
+      align-items: start;
+      margin: 0;
+      border: 1px solid #d8e0da;
+      border-radius: 8px;
+      padding: 12px;
+      background: #fbfcfb;
+      color: #243129;
+      font-weight: 650;
+      line-height: 1.45;
+      cursor: pointer;
+      transition: border-color 0.16s ease, background 0.16s ease, transform 0.16s ease;
+    }
+
+    .alternativa:hover {
+      border-color: rgba(20, 108, 92, 0.55);
+      background: #f4faf8;
+      transform: translateY(-1px);
+    }
+
+    .alternativa input {
+      width: 18px;
+      height: 18px;
+      margin: 2px 0 0;
+      accent-color: var(--accent);
+    }
+
+    .letra {
+      color: var(--accent-dark);
+      font-weight: 900;
     }
 
     pre {
       min-height: 220px;
+      margin: 0;
       white-space: pre-wrap;
-      background: #eef3f8;
-      border: 1px solid #d6dfeb;
+      background: #17211b;
+      border: 1px solid #26362e;
       border-radius: 8px;
-      padding: 16px;
-      line-height: 1.5;
+      padding: 18px;
+      color: #edf7f1;
+      font-family: "Cascadia Code", Consolas, monospace;
+      font-size: 14px;
+      line-height: 1.65;
       overflow-x: auto;
     }
 
-    @media (max-width: 650px) {
+    .aviso {
+      color: var(--warning);
+      font-weight: 800;
+    }
+
+    @media (max-width: 880px) {
+      .topo,
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .painel {
+        position: static;
+      }
+    }
+
+    @media (max-width: 620px) {
+      main {
+        width: min(100% - 22px, 1120px);
+        padding-top: 24px;
+      }
+
+      h1 {
+        font-size: 40px;
+      }
+
+      .resumo,
       .linha {
         grid-template-columns: 1fr;
+      }
+
+      .bloco,
+      .painel {
+        padding: 18px;
+      }
+
+      .questao-topo {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      #corrigir {
+        width: 100%;
       }
     }
   </style>
 </head>
 <body>
   <main>
-    <h1>Gerador de Questoes de Revisao</h1>
-    <p>Informe um tema de estudo, responda as questoes e confira o gabarito comentado no final.</p>
-
-    <section>
-      <label for="tema">Tema da revisao</label>
-      <textarea id="tema" placeholder="Ex.: APIs REST, banco de dados relacional, estruturas condicionais em JavaScript"></textarea>
-
-      <div class="linha">
-        <div>
-          <label for="quantidade">Quantidade</label>
-          <input id="quantidade" type="number" min="3" max="10" value="5" />
-        </div>
-
-        <div>
-          <label for="nivel">Nivel</label>
-          <select id="nivel">
-            <option value="iniciante">Iniciante</option>
-            <option value="intermediario">Intermediario</option>
-            <option value="avancado">Avancado</option>
-          </select>
-        </div>
+    <header class="topo">
+      <div>
+        <h1>Gerador de Questoes de Revisao</h1>
+        <p class="subtitulo">Monte uma lista de perguntas, responda no seu ritmo e confira o gabarito comentado so no final.</p>
       </div>
 
-      <button id="botao" onclick="gerarQuestoes()">Gerar questoes</button>
-    </section>
+      <div class="resumo" aria-label="Resumo do fluxo">
+        <div>
+          <span>Tema</span>
+          <strong>Livre</strong>
+        </div>
+        <div>
+          <span>Questoes</span>
+          <strong>3-10</strong>
+        </div>
+        <div>
+          <span>Niveis</span>
+          <strong>3</strong>
+        </div>
+      </div>
+    </header>
 
-    <section>
-      <h2>Questoes geradas</h2>
-      <div id="questoes">As questoes aparecerao aqui.</div>
-      <button id="corrigir" onclick="corrigirRespostas()" style="display: none;">Corrigir respostas</button>
-    </section>
+    <div class="layout">
+      <section class="painel" aria-labelledby="titulo-formulario">
+        <h2 id="titulo-formulario">Nova revisao</h2>
 
-    <section>
-      <h2>Resultado</h2>
-      <pre id="resultado">O gabarito comentado aparecera depois que voce responder.</pre>
-    </section>
+        <label for="tema">Tema da revisao</label>
+        <textarea id="tema" placeholder="Ex.: APIs REST, banco de dados relacional, estruturas condicionais em JavaScript"></textarea>
+
+        <div class="linha">
+          <div>
+            <label for="quantidade">Quantidade</label>
+            <input id="quantidade" type="number" min="3" max="10" value="5" />
+          </div>
+
+          <div>
+            <label for="nivel">Nivel</label>
+            <select id="nivel">
+              <option value="iniciante">Iniciante</option>
+              <option value="intermediario">Intermediario</option>
+              <option value="avancado">Avancado</option>
+            </select>
+          </div>
+        </div>
+
+        <button id="botao" onclick="gerarQuestoes()">Gerar questoes</button>
+      </section>
+
+      <div class="conteudo">
+        <section class="bloco" aria-labelledby="titulo-questoes">
+          <h2 id="titulo-questoes">Questoes geradas</h2>
+          <div id="questoes" class="estado-vazio">As questoes aparecerao aqui.</div>
+          <button id="corrigir" onclick="corrigirRespostas()" style="display: none;">Corrigir respostas</button>
+        </section>
+
+        <section class="bloco" aria-labelledby="titulo-resultado">
+          <h2 id="titulo-resultado">Resultado</h2>
+          <pre id="resultado">O gabarito comentado aparecera depois que voce responder.</pre>
+        </section>
+      </div>
+    </div>
   </main>
 
   <script>
     let questoesAtuais = [];
+
+    function escaparHtml(valor) {
+      return String(valor)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
 
     function mostrarQuestoes(questoes) {
       const container = document.getElementById("questoes");
@@ -153,29 +473,34 @@
 
       questoesAtuais = questoes;
       resultado.textContent = "O gabarito comentado aparecera depois que voce responder.";
+      container.classList.remove("estado-vazio");
 
       container.innerHTML = questoes.map((questao, indice) => {
         const numero = indice + 1;
         const alternativas = ["A", "B", "C", "D"].map((letra) => {
-          const texto = questao.alternativas?.[letra] || "";
+          const texto = escaparHtml(questao.alternativas?.[letra] || "");
           return `
-            <label>
+            <label class="alternativa">
               <input type="radio" name="questao-${indice}" value="${letra}" />
-              ${letra}) ${texto}
+              <span><span class="letra">${letra})</span> ${texto}</span>
             </label>
           `;
         }).join("");
 
         return `
           <article>
-            <h3>Questao ${numero}</h3>
-            <p>${questao.enunciado}</p>
-            ${alternativas}
+            <div class="questao-topo">
+              <span class="numero">Questao ${numero}</span>
+            </div>
+            <p>${escaparHtml(questao.enunciado)}</p>
+            <div class="alternativas">
+              ${alternativas}
+            </div>
           </article>
         `;
       }).join("");
 
-      corrigir.style.display = "inline-block";
+      corrigir.style.display = "inline-flex";
     }
 
     async function gerarQuestoes() {
@@ -186,6 +511,7 @@
       const botao = document.getElementById("botao");
       const corrigir = document.getElementById("corrigir");
 
+      output.classList.add("estado-vazio");
       output.textContent = "Gerando questoes...";
       document.getElementById("resultado").textContent = "O gabarito comentado aparecera depois que voce responder.";
       corrigir.style.display = "none";
@@ -201,13 +527,13 @@
         const data = await response.json();
 
         if (!response.ok) {
-          output.textContent = data.erro || "Erro ao gerar questoes.";
+          output.innerHTML = `<span class="aviso">${escaparHtml(data.erro || "Erro ao gerar questoes.")}</span>`;
           return;
         }
 
         mostrarQuestoes(data.questoes);
       } catch (error) {
-        output.textContent = "Erro ao conectar com a API local.";
+        output.innerHTML = '<span class="aviso">Erro ao conectar com a API local.</span>';
       } finally {
         botao.disabled = false;
       }
