@@ -5,7 +5,15 @@ import "dotenv/config";
 const app = express();
 const PORT = 3000;
 const API_KEY = process.env.OPENROUTER_API_KEY;
-const MODEL = "openai/gpt-oss-120b:free";
+const MODELS = (process.env.OPENROUTER_MODELS || process.env.OPENROUTER_MODEL || [
+  "openai/gpt-oss-120b:free",
+  "openai/gpt-oss-20b:free",
+  "qwen/qwen3-next-80b-a3b-instruct:free",
+  "meta-llama/llama-3.3-70b-instruct:free"
+].join(","))
+  .split(",")
+  .map((model) => model.trim())
+  .filter(Boolean);
 const LETRAS = ["A", "B", "C", "D"];
 
 if (!API_KEY) {
@@ -18,8 +26,65 @@ app.use(express.json());
 app.use(express.static("public"));
 
 app.get("/api/status", (req, res) => {
-  res.json({ status: "API local funcionando", model: MODEL });
+  res.json({ status: "API local funcionando", models: MODELS });
 });
+
+function extrairMensagemOpenRouter(detalhe) {
+  try {
+    return JSON.parse(detalhe)?.error?.message || detalhe;
+  } catch (error) {
+    return detalhe;
+  }
+}
+
+async function consultarOpenRouter(model, prompt) {
+  return fetch("https://openrouter.ai/api/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${API_KEY}`,
+      "Content-Type": "application/json",
+      "HTTP-Referer": "http://localhost:3000",
+      "X-OpenRouter-Title": "Gerador de Questoes FIA ADS"
+    },
+    body: JSON.stringify({
+      model,
+      messages: [
+        {
+          role: "system",
+          content: "Voce e um professor de ADS que cria questoes de revisao objetivas, corretas e bem comentadas. Sempre responda no formato JSON solicitado."
+        },
+        {
+          role: "user",
+          content: prompt
+        }
+      ],
+      temperature: 0.3,
+      max_completion_tokens: 2200,
+      response_format: { type: "json_object" }
+    })
+  });
+}
+
+function extrairJson(texto) {
+  const limpo = texto
+    .trim()
+    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/\s*```$/i, "")
+    .trim();
+
+  try {
+    return JSON.parse(limpo);
+  } catch (error) {
+    const inicio = limpo.indexOf("{");
+    const fim = limpo.lastIndexOf("}");
+
+    if (inicio === -1 || fim === -1 || fim <= inicio) {
+      throw error;
+    }
+
+    return JSON.parse(limpo.slice(inicio, fim + 1));
+  }
+}
 
 function textoValido(valor, minimo = 8) {
   return typeof valor === "string" && valor.trim().length >= minimo;
@@ -142,37 +207,40 @@ Regras:
 - Antes de responder, confira se todas as questoes tem uma alternativa certa e tres erradas.
 `;
 
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${API_KEY}`,
-        "Content-Type": "application/json",
-        "HTTP-Referer": "http://localhost:3000",
-        "X-OpenRouter-Title": "Gerador de Questoes FIA ADS"
-      },
-      body: JSON.stringify({
-        model: MODEL,
-        messages: [
-          {
-            role: "system",
-            content: "Voce e um professor de ADS que cria questoes de revisao objetivas, corretas e bem comentadas. Sempre responda no formato JSON solicitado."
-          },
-          {
-            role: "user",
-            content: prompt
-          }
-        ],
-        temperature: 0.3,
-        max_completion_tokens: 1600
-      })
-    });
+    let response;
+    let modelUsado;
+    const errosOpenRouter = [];
 
-    if (!response.ok) {
+    for (const model of MODELS) {
+      response = await consultarOpenRouter(model, prompt);
+      modelUsado = model;
+
+      if (response.ok) {
+        break;
+      }
+
       const detalhe = await response.text();
-      return res.status(502).json({
-        erro: "Erro ao consultar o OpenRouter.",
+      errosOpenRouter.push({
+        model,
         status: response.status,
-        detalhe
+        detalhe: extrairMensagemOpenRouter(detalhe)
+      });
+
+      if (![429, 503, 529].includes(response.status)) {
+        break;
+      }
+    }
+
+    if (!response?.ok) {
+      const ultimoErro = errosOpenRouter.at(-1);
+      const rateLimit = errosOpenRouter.some((erro) => erro.status === 429);
+      return res.status(502).json({
+        erro: rateLimit
+          ? "O OpenRouter aceitou sua chave, mas os modelos gratuitos estao com limite temporario. Tente novamente em instantes ou configure outro modelo em OPENROUTER_MODELS."
+          : "Erro ao consultar o OpenRouter.",
+        status: ultimoErro?.status,
+        detalhe: ultimoErro?.detalhe,
+        tentativas: errosOpenRouter
       });
     }
 
@@ -185,9 +253,13 @@ Regras:
 
     let resultado;
     try {
-      resultado = JSON.parse(text);
+      resultado = extrairJson(text);
     } catch (error) {
-      return res.status(502).json({ erro: "A IA respondeu em um formato invalido. Tente novamente." });
+      console.error("Resposta invalida da IA:", text.slice(0, 500));
+      return res.status(502).json({
+        erro: "A IA respondeu em um formato invalido. Tente novamente.",
+        modelo: modelUsado
+      });
     }
 
     if (!Array.isArray(resultado.questoes) || resultado.questoes.length === 0) {
@@ -205,7 +277,7 @@ Regras:
       });
     }
 
-    res.json({ modelo: MODEL, questoes: questoesValidas, uso: data.usage ?? null });
+    res.json({ modelo: modelUsado, questoes: questoesValidas, uso: data.usage ?? null });
   } catch (error) {
     res.status(500).json({ erro: "Erro interno no servidor.", detalhe: error.message });
   }
