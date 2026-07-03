@@ -227,6 +227,23 @@
       box-shadow: none;
     }
 
+    .botao-secundario {
+      width: auto;
+      min-height: 38px;
+      margin-top: 0;
+      padding: 9px 12px;
+      border: 1px solid var(--line);
+      background: #ffffff;
+      color: var(--accent-dark);
+      font-size: 13px;
+      box-shadow: none;
+    }
+
+    .botao-secundario:hover:not(:disabled) {
+      background: var(--accent-soft);
+      color: var(--accent-dark);
+    }
+
     #corrigir {
       width: auto;
       min-width: 190px;
@@ -347,6 +364,55 @@
       font-weight: 800;
     }
 
+    .historico-topo {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .historico-topo h2 {
+      margin-bottom: 0;
+    }
+
+    #historico {
+      display: grid;
+      gap: 10px;
+    }
+
+    .historico-item {
+      display: grid;
+      gap: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+      background: #fbfcfb;
+    }
+
+    .historico-info {
+      display: grid;
+      gap: 5px;
+      min-width: 0;
+    }
+
+    .historico-info strong {
+      color: var(--text);
+      overflow-wrap: anywhere;
+    }
+
+    .historico-meta {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .historico-acoes {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
     @media (max-width: 880px) {
       .topo,
       .layout {
@@ -450,12 +516,23 @@
           <h2 id="titulo-resultado">Resultado</h2>
           <pre id="resultado">O gabarito comentado aparecera depois que voce responder.</pre>
         </section>
+
+        <section class="bloco" aria-labelledby="titulo-historico">
+          <div class="historico-topo">
+            <h2 id="titulo-historico">Historico</h2>
+            <button class="botao-secundario" onclick="limparHistorico()">Limpar</button>
+          </div>
+          <div id="historico" class="estado-vazio">Nenhum simulado corrigido ainda.</div>
+        </section>
       </div>
     </div>
   </main>
 
   <script>
+    const CHAVE_HISTORICO = "geradorQuestoesHistorico";
+    const LIMITE_HISTORICO = 12;
     let questoesAtuais = [];
+    let simuladoAtual = null;
 
     function escaparHtml(valor) {
       return String(valor)
@@ -464,6 +541,124 @@
         .replaceAll(">", "&gt;")
         .replaceAll('"', "&quot;")
         .replaceAll("'", "&#039;");
+    }
+
+    function formatarData(dataIso) {
+      return new Intl.DateTimeFormat("pt-BR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+      }).format(new Date(dataIso));
+    }
+
+    function criarId() {
+      if (crypto.randomUUID) {
+        return crypto.randomUUID();
+      }
+
+      return `simulado-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    }
+
+    function obterHistorico() {
+      try {
+        return JSON.parse(localStorage.getItem(CHAVE_HISTORICO)) || [];
+      } catch (error) {
+        return [];
+      }
+    }
+
+    function gravarHistorico(historico) {
+      localStorage.setItem(CHAVE_HISTORICO, JSON.stringify(historico.slice(0, LIMITE_HISTORICO)));
+      renderizarHistorico();
+    }
+
+    function renderizarHistorico() {
+      const historico = obterHistorico();
+      const container = document.getElementById("historico");
+
+      if (historico.length === 0) {
+        container.classList.add("estado-vazio");
+        container.textContent = "Nenhum simulado corrigido ainda.";
+        return;
+      }
+
+      container.classList.remove("estado-vazio");
+      container.innerHTML = historico.map((item) => {
+        const porcentagem = Math.round((item.acertos / item.total) * 100);
+        return `
+          <article class="historico-item">
+            <div class="historico-info">
+              <strong>${escaparHtml(item.tema)}</strong>
+              <span class="historico-meta">
+                ${formatarData(item.data)} · ${escaparHtml(item.nivel)} · ${item.acertos}/${item.total} acertos (${porcentagem}%)
+              </span>
+            </div>
+            <div class="historico-acoes">
+              <button class="botao-secundario" onclick="reabrirHistorico('${item.id}')">Reabrir</button>
+              <button class="botao-secundario" onclick="excluirHistorico('${item.id}')">Excluir</button>
+            </div>
+          </article>
+        `;
+      }).join("");
+    }
+
+    function salvarNoHistorico(registro) {
+      const historico = obterHistorico().filter((item) => item.id !== registro.id);
+      gravarHistorico([registro, ...historico]);
+    }
+
+    function obterRespostasUsuario() {
+      return questoesAtuais.map((questao, indice) => {
+        const selecionada = document.querySelector(`input[name="questao-${indice}"]:checked`);
+        return selecionada ? selecionada.value : "";
+      });
+    }
+
+    function aplicarRespostas(respostas) {
+      respostas.forEach((resposta, indice) => {
+        if (!resposta) {
+          return;
+        }
+
+        const input = document.querySelector(`input[name="questao-${indice}"][value="${resposta}"]`);
+        if (input) {
+          input.checked = true;
+        }
+      });
+    }
+
+    function reabrirHistorico(id) {
+      const registro = obterHistorico().find((item) => item.id === id);
+      if (!registro) {
+        return;
+      }
+
+      simuladoAtual = registro;
+      document.getElementById("tema").value = registro.tema;
+      document.getElementById("quantidade").value = registro.total;
+      document.getElementById("nivel").value = registro.nivel;
+      mostrarQuestoes(registro.questoes);
+      aplicarRespostas(registro.respostas);
+      document.getElementById("resultado").textContent = registro.resultado;
+      document.getElementById("corrigir").style.display = "inline-flex";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function excluirHistorico(id) {
+      gravarHistorico(obterHistorico().filter((item) => item.id !== id));
+    }
+
+    function limparHistorico() {
+      if (obterHistorico().length === 0) {
+        return;
+      }
+
+      const confirmou = confirm("Deseja apagar todo o historico salvo neste navegador?");
+      if (confirmou) {
+        gravarHistorico([]);
+      }
     }
 
     function mostrarQuestoes(questoes) {
@@ -532,6 +727,13 @@
         }
 
         mostrarQuestoes(data.questoes);
+        simuladoAtual = {
+          id: criarId(),
+          tema: tema.trim(),
+          nivel,
+          total: data.questoes.length,
+          questoes: data.questoes
+        };
       } catch (error) {
         output.innerHTML = '<span class="aviso">Erro ao conectar com a API local.</span>';
       } finally {
@@ -579,8 +781,28 @@ Por que o gabarito esta correto:
 ${explicacaoCorreta}`;
       });
 
-      resultado.textContent = `Voce acertou ${acertos} de ${questoesAtuais.length} questoes.\n\n${linhas.join("\n\n")}`;
+      const textoResultado = `Voce acertou ${acertos} de ${questoesAtuais.length} questoes.\n\n${linhas.join("\n\n")}`;
+      resultado.textContent = textoResultado;
+
+      const tema = document.getElementById("tema").value.trim() || "Tema sem titulo";
+      const nivel = document.getElementById("nivel").value;
+      const registro = {
+        id: simuladoAtual?.id || criarId(),
+        tema,
+        nivel,
+        total: questoesAtuais.length,
+        acertos,
+        respostas: obterRespostasUsuario(),
+        questoes: questoesAtuais,
+        resultado: textoResultado,
+        data: new Date().toISOString()
+      };
+
+      simuladoAtual = registro;
+      salvarNoHistorico(registro);
     }
+
+    renderizarHistorico();
   </script>
 </body>
 </html>

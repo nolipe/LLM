@@ -15,6 +15,7 @@ Esta aplicacao ajuda alunos a estudarem para provas. O usuario informa um tema, 
 - Exibe apenas as questoes geradas na tela.
 - Permite que o usuario marque as respostas.
 - Mostra o gabarito comentado somente depois da correcao.
+- Salva historico local dos simulados corrigidos no navegador.
 - Mantem a chave da API protegida no arquivo `.env`.
 
 ## Como instalar
@@ -84,3 +85,9 @@ Quantidade: 5
 Nivel: iniciante
 
 Saida esperada: o sistema gera questoes de multipla escolha sobre APIs REST. Depois que o usuario responde, a aplicacao mostra quantidade de acertos, gabarito e comentario explicativo.
+
+## Historico local
+
+Depois que o usuario clica em **Corrigir respostas**, o simulado e salvo automaticamente no `localStorage` do navegador. O historico guarda tema, nivel, quantidade, questoes, respostas marcadas, nota e data.
+
+Esse historico fica apenas no navegador usado. Se o usuario limpar os dados do navegador ou abrir em outro computador, os simulados salvos nao aparecem.
