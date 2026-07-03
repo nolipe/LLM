@@ -4,497 +4,93 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Gerador de Questoes de Revisao</title>
-  <style>
-    :root {
-      --bg: #f6f7f4;
-      --panel: #ffffff;
-      --panel-soft: #f1f5f2;
-      --text: #18211b;
-      --muted: #5e6b62;
-      --line: #d8e0da;
-      --accent: #146c5c;
-      --accent-dark: #0f5146;
-      --accent-soft: #dff1ed;
-      --warning: #b45309;
-      --shadow: 0 18px 45px rgba(24, 33, 27, 0.1);
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      margin: 0;
-      min-height: 100vh;
-      font-family: Inter, "Segoe UI", Arial, sans-serif;
-      background:
-        linear-gradient(135deg, rgba(20, 108, 92, 0.13), transparent 34%),
-        linear-gradient(315deg, rgba(177, 91, 50, 0.1), transparent 32%),
-        var(--bg);
-      color: var(--text);
-    }
-
-    main {
-      width: min(1120px, calc(100% - 32px));
-      margin: 0 auto;
-      padding: 36px 0 48px;
-    }
-
-    .topo {
-      display: grid;
-      grid-template-columns: minmax(0, 1.1fr) minmax(280px, 0.9fr);
-      gap: 28px;
-      align-items: end;
-      margin-bottom: 24px;
-    }
-
-    .marca {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      width: fit-content;
-      margin-bottom: 18px;
-      color: var(--accent-dark);
-      font-size: 13px;
-      font-weight: 800;
-      letter-spacing: 0;
-      text-transform: uppercase;
-    }
-
-    .marca::before {
-      content: "";
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      background: var(--accent);
-      box-shadow: 18px 0 0 #d17a4f;
-    }
-
-    h1,
-    h2,
-    h3,
-    p {
-      margin-top: 0;
-    }
-
-    h1 {
-      max-width: 720px;
-      margin-bottom: 12px;
-      font-size: clamp(34px, 6vw, 68px);
-      line-height: 0.97;
-      letter-spacing: 0;
-    }
-
-    .subtitulo {
-      max-width: 650px;
-      margin-bottom: 0;
-      color: var(--muted);
-      font-size: 18px;
-      line-height: 1.65;
-    }
-
-    .resumo {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-      padding: 14px;
-      border: 1px solid rgba(20, 108, 92, 0.16);
-      border-radius: 8px;
-      background: rgba(255, 255, 255, 0.7);
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(14px);
-    }
-
-    .resumo span {
-      display: block;
-      color: var(--muted);
-      font-size: 12px;
-      font-weight: 700;
-      text-transform: uppercase;
-    }
-
-    .resumo strong {
-      display: block;
-      margin-top: 5px;
-      font-size: 24px;
-    }
-
-    .layout {
-      display: grid;
-      grid-template-columns: minmax(300px, 380px) minmax(0, 1fr);
-      gap: 22px;
-      align-items: start;
-    }
-
-    section {
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: rgba(255, 255, 255, 0.88);
-      box-shadow: var(--shadow);
-    }
-
-    .painel {
-      position: sticky;
-      top: 18px;
-      padding: 22px;
-    }
-
-    .conteudo {
-      display: grid;
-      gap: 18px;
-    }
-
-    .bloco {
-      padding: 22px;
-    }
-
-    h2 {
-      margin-bottom: 14px;
-      font-size: 22px;
-      letter-spacing: 0;
-    }
-
-    label {
-      display: block;
-      margin: 16px 0 7px;
-      color: #26352b;
-      font-size: 14px;
-      font-weight: 800;
-    }
-
-    textarea,
-    select,
-    input[type="number"] {
-      width: 100%;
-      border: 1px solid #bdc9c0;
-      border-radius: 8px;
-      padding: 12px 13px;
-      background: #fbfcfb;
-      color: var(--text);
-      font: inherit;
-      font-size: 15px;
-      outline: none;
-      transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
-    }
-
-    textarea {
-      min-height: 142px;
-      resize: vertical;
-    }
-
-    textarea:focus,
-    select:focus,
-    input[type="number"]:focus {
-      border-color: var(--accent);
-      background: #ffffff;
-      box-shadow: 0 0 0 4px rgba(20, 108, 92, 0.13);
-    }
-
-    .linha {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-    }
-
-    button {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 100%;
-      min-height: 48px;
-      margin-top: 18px;
-      border: 0;
-      border-radius: 8px;
-      padding: 12px 18px;
-      background: var(--accent);
-      color: #ffffff;
-      font: inherit;
-      font-size: 15px;
-      font-weight: 800;
-      cursor: pointer;
-      transition: transform 0.16s ease, background 0.16s ease, box-shadow 0.16s ease;
-      box-shadow: 0 12px 22px rgba(20, 108, 92, 0.23);
-    }
-
-    button:hover:not(:disabled) {
-      background: var(--accent-dark);
-      transform: translateY(-1px);
-    }
-
-    button:disabled {
-      background: #8aa59d;
-      cursor: wait;
-      box-shadow: none;
-    }
-
-    .botao-secundario {
-      width: auto;
-      min-height: 38px;
-      margin-top: 0;
-      padding: 9px 12px;
-      border: 1px solid var(--line);
-      background: #ffffff;
-      color: var(--accent-dark);
-      font-size: 13px;
-      box-shadow: none;
-    }
-
-    .botao-secundario:hover:not(:disabled) {
-      background: var(--accent-soft);
-      color: var(--accent-dark);
-    }
-
-    #corrigir {
-      width: auto;
-      min-width: 190px;
-      margin-top: 8px;
-    }
-
-    #questoes {
-      display: grid;
-      gap: 14px;
-      color: var(--muted);
-    }
-
-    .estado-vazio {
-      display: grid;
-      place-items: center;
-      min-height: 170px;
-      border: 1px dashed #b9c8bd;
-      border-radius: 8px;
-      background: var(--panel-soft);
-      color: var(--muted);
-      text-align: center;
-      padding: 18px;
-    }
-
-    article {
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: var(--panel);
-      overflow: hidden;
-    }
-
-    .questao-topo {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 14px;
-      padding: 16px 18px 0;
-    }
-
-    .numero {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-width: 86px;
-      height: 32px;
-      border-radius: 999px;
-      background: var(--accent-soft);
-      color: var(--accent-dark);
-      font-size: 13px;
-      font-weight: 900;
-    }
-
-    article p {
-      margin: 12px 18px 16px;
-      color: #26352b;
-      font-size: 17px;
-      line-height: 1.55;
-    }
-
-    .alternativas {
-      display: grid;
-      gap: 10px;
-      padding: 0 18px 18px;
-    }
-
-    .alternativa {
-      display: grid;
-      grid-template-columns: 22px 1fr;
-      gap: 10px;
-      align-items: start;
-      margin: 0;
-      border: 1px solid #d8e0da;
-      border-radius: 8px;
-      padding: 12px;
-      background: #fbfcfb;
-      color: #243129;
-      font-weight: 650;
-      line-height: 1.45;
-      cursor: pointer;
-      transition: border-color 0.16s ease, background 0.16s ease, transform 0.16s ease;
-    }
-
-    .alternativa:hover {
-      border-color: rgba(20, 108, 92, 0.55);
-      background: #f4faf8;
-      transform: translateY(-1px);
-    }
-
-    .alternativa input {
-      width: 18px;
-      height: 18px;
-      margin: 2px 0 0;
-      accent-color: var(--accent);
-    }
-
-    .letra {
-      color: var(--accent-dark);
-      font-weight: 900;
-    }
-
-    pre {
-      min-height: 220px;
-      margin: 0;
-      white-space: pre-wrap;
-      background: #17211b;
-      border: 1px solid #26362e;
-      border-radius: 8px;
-      padding: 18px;
-      color: #edf7f1;
-      font-family: "Cascadia Code", Consolas, monospace;
-      font-size: 14px;
-      line-height: 1.65;
-      overflow-x: auto;
-    }
-
-    .aviso {
-      color: var(--warning);
-      font-weight: 800;
-    }
-
-    .historico-topo {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 14px;
-    }
-
-    .historico-topo h2 {
-      margin-bottom: 0;
-    }
-
-    #historico {
-      display: grid;
-      gap: 10px;
-    }
-
-    .historico-item {
-      display: grid;
-      gap: 12px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      padding: 14px;
-      background: #fbfcfb;
-    }
-
-    .historico-info {
-      display: grid;
-      gap: 5px;
-      min-width: 0;
-    }
-
-    .historico-info strong {
-      color: var(--text);
-      overflow-wrap: anywhere;
-    }
-
-    .historico-meta {
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.45;
-    }
-
-    .historico-acoes {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    @media (max-width: 880px) {
-      .topo,
-      .layout {
-        grid-template-columns: 1fr;
+  <script>
+    window.tailwind = window.tailwind || {};
+    window.tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            appBg: "#f6f7f4",
+            appText: "#18211b",
+            appMuted: "#5e6b62",
+            appLine: "#d8e0da",
+            appAccent: "#146c5c",
+            appAccentDark: "#0f5146",
+            appAccentSoft: "#dff1ed",
+            appWarning: "#b45309"
+          },
+          boxShadow: {
+            app: "0 18px 45px rgba(24, 33, 27, 0.1)",
+            button: "0 12px 22px rgba(20, 108, 92, 0.23)"
+          },
+          fontFamily: {
+            sans: ["Inter", "Segoe UI", "Arial", "sans-serif"],
+            code: ["Cascadia Code", "Consolas", "monospace"]
+          }
+        }
       }
-
-      .painel {
-        position: static;
-      }
-    }
-
-    @media (max-width: 620px) {
-      main {
-        width: min(100% - 22px, 1120px);
-        padding-top: 24px;
-      }
-
-      h1 {
-        font-size: 40px;
-      }
-
-      .resumo,
-      .linha {
-        grid-template-columns: 1fr;
-      }
-
-      .bloco,
-      .painel {
-        padding: 18px;
-      }
-
-      .questao-topo {
-        align-items: flex-start;
-        flex-direction: column;
-      }
-
-      #corrigir {
-        width: 100%;
-      }
-    }
-  </style>
+    };
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-  <main>
-    <header class="topo">
+<body class="min-h-screen bg-appBg bg-[linear-gradient(135deg,rgba(20,108,92,0.13),transparent_34%),linear-gradient(315deg,rgba(177,91,50,0.1),transparent_32%)] font-sans text-appText">
+  <main class="mx-auto w-[min(1120px,calc(100%_-_32px))] py-9 pb-12 max-[620px]:w-[min(100%_-_22px,1120px)] max-[620px]:pt-6">
+    <header class="mb-6 grid grid-cols-[minmax(0,1.1fr)_minmax(280px,0.9fr)] items-end gap-7 max-[880px]:grid-cols-1">
       <div>
-        <h1>Gerador de Questoes de Revisao</h1>
-        <p class="subtitulo">Monte uma lista de perguntas, responda no seu ritmo e confira o gabarito comentado so no final.</p>
+        <h1 class="mb-3 max-w-[720px] text-[clamp(34px,6vw,68px)] font-bold leading-[0.97] tracking-normal max-[620px]:text-[40px]">
+          Gerador de Questoes de Revisao
+        </h1>
+        <p class="mb-0 max-w-[650px] text-lg leading-[1.65] text-appMuted">
+          Monte uma lista de perguntas, responda no seu ritmo e confira o gabarito comentado so no final.
+        </p>
       </div>
 
-      <div class="resumo" aria-label="Resumo do fluxo">
+      <div class="grid grid-cols-3 gap-2.5 rounded-lg border border-[rgba(20,108,92,0.16)] bg-white/70 p-3.5 shadow-app backdrop-blur-[14px] max-[620px]:grid-cols-1" aria-label="Resumo do fluxo">
         <div>
-          <span>Tema</span>
-          <strong>Livre</strong>
+          <span class="block text-xs font-bold uppercase text-appMuted">Tema</span>
+          <strong class="mt-1 block text-2xl">Livre</strong>
         </div>
         <div>
-          <span>Questoes</span>
-          <strong>3-10</strong>
+          <span class="block text-xs font-bold uppercase text-appMuted">Questoes</span>
+          <strong class="mt-1 block text-2xl">3-10</strong>
         </div>
         <div>
-          <span>Niveis</span>
-          <strong>3</strong>
+          <span class="block text-xs font-bold uppercase text-appMuted">Niveis</span>
+          <strong class="mt-1 block text-2xl">3</strong>
         </div>
       </div>
     </header>
 
-    <div class="layout">
-      <section class="painel" aria-labelledby="titulo-formulario">
-        <h2 id="titulo-formulario">Nova revisao</h2>
+    <div class="grid grid-cols-[minmax(300px,380px)_minmax(0,1fr)] items-start gap-[22px] max-[880px]:grid-cols-1">
+      <section class="sticky top-[18px] rounded-lg border border-appLine bg-white/90 p-[22px] shadow-app max-[880px]:static max-[620px]:p-[18px]" aria-labelledby="titulo-formulario">
+        <h2 id="titulo-formulario" class="mb-3.5 text-[22px] font-bold tracking-normal">Nova revisao</h2>
 
-        <label for="tema">Tema da revisao</label>
-        <textarea id="tema" placeholder="Ex.: APIs REST, banco de dados relacional, estruturas condicionais em JavaScript"></textarea>
+        <label class="mb-2 mt-4 block text-sm font-extrabold text-[#26352b]" for="tema">Tema da revisao</label>
+        <textarea
+          id="tema"
+          class="min-h-[142px] w-full resize-y rounded-lg border border-[#bdc9c0] bg-[#fbfcfb] px-[13px] py-3 text-[15px] text-appText outline-none transition focus:border-appAccent focus:bg-white focus:shadow-[0_0_0_4px_rgba(20,108,92,0.13)]"
+          placeholder="Ex.: APIs REST, banco de dados relacional, estruturas condicionais em JavaScript"
+        ></textarea>
 
-        <div class="linha">
+        <div class="grid grid-cols-2 gap-3.5 max-[620px]:grid-cols-1">
           <div>
-            <label for="quantidade">Quantidade</label>
-            <input id="quantidade" type="number" min="3" max="10" value="5" />
+            <label class="mb-2 mt-4 block text-sm font-extrabold text-[#26352b]" for="quantidade">Quantidade</label>
+            <input
+              id="quantidade"
+              class="w-full rounded-lg border border-[#bdc9c0] bg-[#fbfcfb] px-[13px] py-3 text-[15px] text-appText outline-none transition focus:border-appAccent focus:bg-white focus:shadow-[0_0_0_4px_rgba(20,108,92,0.13)]"
+              type="number"
+              min="3"
+              max="10"
+              value="5"
+            />
           </div>
 
           <div>
-            <label for="nivel">Nivel</label>
-            <select id="nivel">
+            <label class="mb-2 mt-4 block text-sm font-extrabold text-[#26352b]" for="nivel">Nivel</label>
+            <select
+              id="nivel"
+              class="w-full rounded-lg border border-[#bdc9c0] bg-[#fbfcfb] px-[13px] py-3 text-[15px] text-appText outline-none transition focus:border-appAccent focus:bg-white focus:shadow-[0_0_0_4px_rgba(20,108,92,0.13)]"
+            >
               <option value="iniciante">Iniciante</option>
               <option value="intermediario">Intermediario</option>
               <option value="avancado">Avancado</option>
@@ -502,27 +98,43 @@
           </div>
         </div>
 
-        <button id="botao" onclick="gerarQuestoes()">Gerar questoes</button>
+        <button
+          id="botao"
+          class="mt-[18px] inline-flex min-h-12 w-full cursor-pointer items-center justify-center rounded-lg bg-[#146c5c] px-[18px] py-3 text-[15px] font-extrabold text-white shadow-[0_12px_22px_rgba(20,108,92,0.23)] transition hover:-translate-y-px hover:bg-[#0f5146] disabled:cursor-wait disabled:bg-[#8aa59d] disabled:shadow-none"
+          onclick="gerarQuestoes()"
+        >
+          Gerar questoes
+        </button>
       </section>
 
-      <div class="conteudo">
-        <section class="bloco" aria-labelledby="titulo-questoes">
-          <h2 id="titulo-questoes">Questoes geradas</h2>
-          <div id="questoes" class="estado-vazio">As questoes aparecerao aqui.</div>
-          <button id="corrigir" onclick="corrigirRespostas()" style="display: none;">Corrigir respostas</button>
-        </section>
-
-        <section class="bloco" aria-labelledby="titulo-resultado">
-          <h2 id="titulo-resultado">Resultado</h2>
-          <pre id="resultado">O gabarito comentado aparecera depois que voce responder.</pre>
-        </section>
-
-        <section class="bloco" aria-labelledby="titulo-historico">
-          <div class="historico-topo">
-            <h2 id="titulo-historico">Historico</h2>
-            <button class="botao-secundario" onclick="limparHistorico()">Limpar</button>
+      <div class="grid gap-[18px]">
+        <section class="rounded-lg border border-appLine bg-white/90 p-[22px] shadow-app max-[620px]:p-[18px]" aria-labelledby="titulo-questoes">
+          <h2 id="titulo-questoes" class="mb-3.5 text-[22px] font-bold tracking-normal">Questoes geradas</h2>
+          <div id="questoes" class="grid min-h-[170px] place-items-center rounded-lg border border-dashed border-[#b9c8bd] bg-[#f1f5f2] p-[18px] text-center text-appMuted">
+            As questoes aparecerao aqui.
           </div>
-          <div id="historico" class="estado-vazio">Nenhum simulado corrigido ainda.</div>
+          <button
+            id="corrigir"
+            class="mt-2 hidden min-h-12 w-auto min-w-[190px] cursor-pointer items-center justify-center rounded-lg bg-[#146c5c] px-[18px] py-3 text-[15px] font-extrabold text-white shadow-[0_12px_22px_rgba(20,108,92,0.23)] transition hover:-translate-y-px hover:bg-[#0f5146] disabled:cursor-wait disabled:bg-[#8aa59d] disabled:shadow-none max-[620px]:w-full"
+            onclick="corrigirRespostas()"
+          >
+            Corrigir respostas
+          </button>
+        </section>
+
+        <section class="rounded-lg border border-appLine bg-white/90 p-[22px] shadow-app max-[620px]:p-[18px]" aria-labelledby="titulo-resultado">
+          <h2 id="titulo-resultado" class="mb-3.5 text-[22px] font-bold tracking-normal">Resultado</h2>
+          <pre id="resultado" class="m-0 min-h-[220px] overflow-x-auto whitespace-pre-wrap rounded-lg border border-[#26362e] bg-[#17211b] p-[18px] font-code text-sm leading-[1.65] text-[#edf7f1]">O gabarito comentado aparecera depois que voce responder.</pre>
+        </section>
+
+        <section class="rounded-lg border border-appLine bg-white/90 p-[22px] shadow-app max-[620px]:p-[18px]" aria-labelledby="titulo-historico">
+          <div class="mb-3.5 flex items-center justify-between gap-3">
+            <h2 id="titulo-historico" class="text-[22px] font-bold tracking-normal">Historico</h2>
+            <button class="inline-flex min-h-[38px] w-auto items-center justify-center rounded-lg border border-appLine bg-white px-3 py-2 text-[13px] font-extrabold text-appAccentDark shadow-none transition hover:bg-appAccentSoft" onclick="limparHistorico()">Limpar</button>
+          </div>
+          <div id="historico" class="grid min-h-[170px] place-items-center rounded-lg border border-dashed border-[#b9c8bd] bg-[#f1f5f2] p-[18px] text-center text-appMuted">
+            Nenhum simulado corrigido ainda.
+          </div>
         </section>
       </div>
     </div>
@@ -531,6 +143,26 @@
   <script>
     const CHAVE_HISTORICO = "geradorQuestoesHistorico";
     const LIMITE_HISTORICO = 12;
+    const CLASSES = {
+      vazio: "grid min-h-[170px] place-items-center rounded-lg border border-dashed border-[#b9c8bd] bg-[#f1f5f2] p-[18px] text-center text-appMuted",
+      lista: "grid gap-3.5 text-appMuted",
+      artigo: "overflow-hidden rounded-lg border border-appLine bg-white",
+      questaoTopo: "flex items-center justify-between gap-3.5 px-[18px] pt-4 max-[620px]:flex-col max-[620px]:items-start",
+      numero: "inline-flex h-8 min-w-[86px] items-center justify-center rounded-full bg-appAccentSoft text-[13px] font-black text-appAccentDark",
+      enunciado: "mx-[18px] mb-4 mt-3 text-[17px] leading-[1.55] text-[#26352b]",
+      alternativas: "grid gap-2.5 px-[18px] pb-[18px]",
+      alternativa: "m-0 grid cursor-pointer grid-cols-[22px_1fr] items-start gap-2.5 rounded-lg border border-appLine bg-[#fbfcfb] p-3 font-semibold leading-[1.45] text-[#243129] transition hover:-translate-y-px hover:border-[rgba(20,108,92,0.55)] hover:bg-[#f4faf8]",
+      radio: "mt-0.5 h-[18px] w-[18px] accent-appAccent",
+      letra: "font-black text-appAccentDark",
+      aviso: "font-extrabold text-appWarning",
+      historicoItem: "grid gap-3 rounded-lg border border-appLine bg-[#fbfcfb] p-3.5",
+      historicoInfo: "grid min-w-0 gap-1",
+      historicoTema: "[overflow-wrap:anywhere] text-appText",
+      historicoMeta: "text-[13px] leading-[1.45] text-appMuted",
+      historicoAcoes: "flex flex-wrap gap-2",
+      secundario: "inline-flex min-h-[38px] w-auto items-center justify-center rounded-lg border border-appLine bg-white px-3 py-2 text-[13px] font-extrabold text-appAccentDark shadow-none transition hover:bg-appAccentSoft"
+    };
+
     let questoesAtuais = [];
     let simuladoAtual = null;
 
@@ -579,25 +211,25 @@
       const container = document.getElementById("historico");
 
       if (historico.length === 0) {
-        container.classList.add("estado-vazio");
+        container.className = CLASSES.vazio;
         container.textContent = "Nenhum simulado corrigido ainda.";
         return;
       }
 
-      container.classList.remove("estado-vazio");
+      container.className = "grid gap-2.5";
       container.innerHTML = historico.map((item) => {
         const porcentagem = Math.round((item.acertos / item.total) * 100);
         return `
-          <article class="historico-item">
-            <div class="historico-info">
-              <strong>${escaparHtml(item.tema)}</strong>
-              <span class="historico-meta">
-                ${formatarData(item.data)} · ${escaparHtml(item.nivel)} · ${item.acertos}/${item.total} acertos (${porcentagem}%)
+          <article class="${CLASSES.historicoItem}">
+            <div class="${CLASSES.historicoInfo}">
+              <strong class="${CLASSES.historicoTema}">${escaparHtml(item.tema)}</strong>
+              <span class="${CLASSES.historicoMeta}">
+                ${formatarData(item.data)} - ${escaparHtml(item.nivel)} - ${item.acertos}/${item.total} acertos (${porcentagem}%)
               </span>
             </div>
-            <div class="historico-acoes">
-              <button class="botao-secundario" onclick="reabrirHistorico('${item.id}')">Reabrir</button>
-              <button class="botao-secundario" onclick="excluirHistorico('${item.id}')">Excluir</button>
+            <div class="${CLASSES.historicoAcoes}">
+              <button class="${CLASSES.secundario}" onclick="reabrirHistorico('${item.id}')">Reabrir</button>
+              <button class="${CLASSES.secundario}" onclick="excluirHistorico('${item.id}')">Excluir</button>
             </div>
           </article>
         `;
@@ -668,27 +300,27 @@
 
       questoesAtuais = questoes;
       resultado.textContent = "O gabarito comentado aparecera depois que voce responder.";
-      container.classList.remove("estado-vazio");
+      container.className = CLASSES.lista;
 
       container.innerHTML = questoes.map((questao, indice) => {
         const numero = indice + 1;
         const alternativas = ["A", "B", "C", "D"].map((letra) => {
           const texto = escaparHtml(questao.alternativas?.[letra] || "");
           return `
-            <label class="alternativa">
-              <input type="radio" name="questao-${indice}" value="${letra}" />
-              <span><span class="letra">${letra})</span> ${texto}</span>
+            <label class="${CLASSES.alternativa}">
+              <input class="${CLASSES.radio}" type="radio" name="questao-${indice}" value="${letra}" />
+              <span><span class="${CLASSES.letra}">${letra})</span> ${texto}</span>
             </label>
           `;
         }).join("");
 
         return `
-          <article>
-            <div class="questao-topo">
-              <span class="numero">Questao ${numero}</span>
+          <article class="${CLASSES.artigo}">
+            <div class="${CLASSES.questaoTopo}">
+              <span class="${CLASSES.numero}">Questao ${numero}</span>
             </div>
-            <p>${escaparHtml(questao.enunciado)}</p>
-            <div class="alternativas">
+            <p class="${CLASSES.enunciado}">${escaparHtml(questao.enunciado)}</p>
+            <div class="${CLASSES.alternativas}">
               ${alternativas}
             </div>
           </article>
@@ -706,7 +338,7 @@
       const botao = document.getElementById("botao");
       const corrigir = document.getElementById("corrigir");
 
-      output.classList.add("estado-vazio");
+      output.className = CLASSES.vazio;
       output.textContent = "Gerando questoes...";
       document.getElementById("resultado").textContent = "O gabarito comentado aparecera depois que voce responder.";
       corrigir.style.display = "none";
@@ -722,7 +354,7 @@
         const data = await response.json();
 
         if (!response.ok) {
-          output.innerHTML = `<span class="aviso">${escaparHtml(data.erro || "Erro ao gerar questoes.")}</span>`;
+          output.innerHTML = `<span class="${CLASSES.aviso}">${escaparHtml(data.erro || "Erro ao gerar questoes.")}</span>`;
           return;
         }
 
@@ -735,7 +367,7 @@
           questoes: data.questoes
         };
       } catch (error) {
-        output.innerHTML = '<span class="aviso">Erro ao conectar com a API local.</span>';
+        output.innerHTML = `<span class="${CLASSES.aviso}">Erro ao conectar com a API local.</span>`;
       } finally {
         botao.disabled = false;
       }
